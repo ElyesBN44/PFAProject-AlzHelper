@@ -1,6 +1,4 @@
-
-
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const mongoose = require('mongoose');
 const app = require('./app');
 
