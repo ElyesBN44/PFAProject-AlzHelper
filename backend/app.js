@@ -8,6 +8,9 @@ dotenv.config();
 
 
 const authRoutes = require('./routes/authRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const doctorRoutes = require('./routes/doctorRoutes');
+const doctorActionsRoutes = require('./routes/doctorActionsRoutes');
 
 
 const app = express();
@@ -18,6 +21,9 @@ app.use(express.json());
 
 
 app.use('/api', authRoutes); // /api/caregiver/login
+app.use('/api', reportRoutes);
+app.use('/api', doctorRoutes);
+app.use('/api', doctorActionsRoutes);
 
 
 app.use((err, req, res, next) => {
