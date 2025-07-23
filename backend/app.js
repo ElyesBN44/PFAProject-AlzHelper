@@ -13,8 +13,7 @@ const doctorRoutes = require('./routes/doctorRoutes');
 const doctorActionsRoutes = require('./routes/doctorActionsRoutes');
 
 
-const app = express();
-//whatever
+const app = express(); 
 
 app.use(cors());
 app.use(express.json());

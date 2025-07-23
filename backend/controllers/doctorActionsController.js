@@ -32,3 +32,21 @@ exports.addNote = async (req, res) => {
     res.status(500).json({ message: 'Failed to add note', error: error.message });
   }
 };
+
+exports.getNotesForReport = async (req, res) => {
+  try {
+    const notes = await Note.find({ reportId: req.params.reportId });
+    res.json(notes);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.getAllNotes = async (req, res) => {
+  try {
+    const notes = await Note.find();
+    res.json(notes);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
