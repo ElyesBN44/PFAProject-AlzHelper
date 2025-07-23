@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Text, RadioButton } from 'react-native-paper';
 import { loginCaregiver, loginDoctor } from '../api/auth';
+import { saveToken } from '../utils/tokenStorage';
 
 const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -22,8 +23,14 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       }
       // Log the token for now
       console.log('Token:', response.token);
+      // Save token
+      await saveToken(response.token);
       // TODO: Save token and navigate to dashboard based on role
-      navigation.navigate('Register');
+      if (role === 'caregiver') {
+        navigation.reset({ index: 0, routes: [{ name: 'CaregiverDashboard' }] });
+      } else {
+        navigation.reset({ index: 0, routes: [{ name: 'DoctorDashboard' }] });
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {
