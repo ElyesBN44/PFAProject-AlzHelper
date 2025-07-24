@@ -8,6 +8,7 @@ import DoctorDashboard from './screens/DoctorDashboard';
 import AddReportScreen from './screens/AddReportScreen';
 import ViewReportsScreen from './screens/ViewReportsScreen';
 import AddNoteScreen from './screens/AddNoteScreen';
+import PatientDetailsScreen from './screens/PatientDetailsScreen';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -17,6 +18,7 @@ export type RootStackParamList = {
   AddReportScreen: undefined;
   ViewReportsScreen: undefined;
   AddNoteScreen: { report: any };
+  PatientDetailsScreen: { patient: any };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -32,6 +34,7 @@ export default function App() {
         <Stack.Screen name="AddReportScreen" component={AddReportScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ViewReportsScreen" component={ViewReportsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AddNoteScreen" component={AddNoteScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="PatientDetailsScreen" component={PatientDetailsScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
