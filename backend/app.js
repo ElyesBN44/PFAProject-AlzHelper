@@ -11,6 +11,7 @@ const authRoutes = require('./routes/authRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');
 const doctorActionsRoutes = require('./routes/doctorActionsRoutes');
+const patientRoutes = require('./routes/patientRoutes');
 
 
 const app = express(); 
@@ -23,6 +24,7 @@ app.use('/api', authRoutes); // /api/caregiver/login
 app.use('/api', reportRoutes);
 app.use('/api', doctorRoutes);
 app.use('/api', doctorActionsRoutes);
+app.use('/api/patient', patientRoutes);
 
 
 app.use((err, req, res, next) => {
