@@ -32,7 +32,7 @@ const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const renderPatient = ({ item }: any) => (
-    <Card style={styles.card}>
+    <Card style={styles.card} onPress={() => navigation.navigate('PatientDetailsScreen', { patient: item })}>
       <Card.Content style={styles.cardContent}>
         <Image
           source={item.picture ? { uri: item.picture } : defaultPatientImage}
