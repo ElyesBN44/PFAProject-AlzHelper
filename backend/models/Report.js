@@ -6,6 +6,11 @@ const reportSchema = new mongoose.Schema({
     ref: 'Caregiver',
     required: true
   },
+  patient: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Patient',
+    required: true
+  },
   symptoms: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Symptom'
