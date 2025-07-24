@@ -1,26 +1,31 @@
-import React from 'react';
-import { View, StyleSheet, FlatList, Image, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { Appbar, Card, Text, Button } from 'react-native-paper';
 import { removeToken } from '../utils/tokenStorage';
+import { getAllPatients } from '../api/patients';
 
-const mockPatients = [
-  {
-    id: '1',
-    name: 'John Doe',
-    age: 78,
-    condition: 'Stable',
-    image: require('../pictures/oldman.jpg'),
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    age: 82,
-    condition: 'Needs Attention',
-    image: require('../pictures/oldwoman.jpg'),
-  },
-];
+const defaultPatientImage = require('../pictures/oldman.jpg'); // fallback image
 
 const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const [patients, setPatients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        setError('');
+        const data = await getAllPatients();
+        setPatients(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load patients');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPatients();
+  }, []);
+
   const handleLogout = async () => {
     await removeToken();
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
@@ -29,11 +34,15 @@ const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
   const renderPatient = ({ item }: any) => (
     <Card style={styles.card}>
       <Card.Content style={styles.cardContent}>
-        <Image source={item.image} style={styles.patientImage} />
+        <Image
+          source={item.picture ? { uri: item.picture } : defaultPatientImage}
+          style={styles.patientImage}
+        />
         <View style={styles.patientInfo}>
           <Text style={styles.patientName}>{item.name}</Text>
           <Text>Age: {item.age}</Text>
-          <Text>Condition: {item.condition}</Text>
+          <Text>Gender: {item.gender}</Text>
+          <Text>Contact: {item.contact}</Text>
         </View>
       </Card.Content>
     </Card>
@@ -47,13 +56,20 @@ const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
       </Appbar.Header>
       <ScrollView style={styles.content}>
         <Text style={styles.sectionTitle}>Patient Overview</Text>
-        <FlatList
-          data={mockPatients}
-          renderItem={renderPatient}
-          keyExtractor={item => item.id}
-          scrollEnabled={false}
-          style={styles.patientList}
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#000" style={{ marginVertical: 32 }} />
+        ) : error ? (
+          <Text style={{ color: 'red', textAlign: 'center', marginBottom: 16 }}>{error}</Text>
+        ) : (
+          <FlatList
+            data={patients}
+            renderItem={renderPatient}
+            keyExtractor={item => item._id}
+            scrollEnabled={false}
+            style={styles.patientList}
+            ListEmptyComponent={<Text style={{ textAlign: 'center', color: '#666' }}>No patients found.</Text>}
+          />
+        )}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionButtons}>
           <Button 
