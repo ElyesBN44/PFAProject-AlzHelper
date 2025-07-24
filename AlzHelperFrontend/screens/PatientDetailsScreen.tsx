@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, ScrollView, ActivityIndicator } from 'react-native';
-import { Appbar, Text, Card, Chip } from 'react-native-paper';
-import { getPatientReports } from '../api/patients';
+import { View, StyleSheet, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { Appbar, Text, Card, Chip, Button } from 'react-native-paper';
+import { getPatientReports, deletePatient } from '../api/patients';
 
 const defaultPatientImage = require('../pictures/oldman.jpg');
 
@@ -10,6 +10,7 @@ const PatientDetailsScreen: React.FC<{ navigation: any; route: any }> = ({ navig
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -26,6 +27,31 @@ const PatientDetailsScreen: React.FC<{ navigation: any; route: any }> = ({ navig
     };
     fetchReports();
   }, [patient._id]);
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Patient',
+      'Are you sure you want to delete this patient? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deletePatient(patient._id);
+              navigation.goBack();
+            } catch (err: any) {
+              Alert.alert('Error', err.message || 'Failed to delete patient');
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -48,6 +74,15 @@ const PatientDetailsScreen: React.FC<{ navigation: any; route: any }> = ({ navig
             </View>
           </Card.Content>
         </Card>
+        <Button
+          mode="contained"
+          onPress={handleDelete}
+          loading={deleting}
+          disabled={deleting}
+          style={[styles.deleteButton, { backgroundColor: '#d32f2f' }]}
+        >
+          Delete Patient
+        </Button>
         <Text style={styles.sectionTitle}>Reports</Text>
         {loading ? (
           <ActivityIndicator size="large" color="#000" style={{ marginVertical: 32 }} />
@@ -142,6 +177,10 @@ const styles = StyleSheet.create({
   },
   symptomChip: {
     marginBottom: 8,
+  },
+  deleteButton: {
+    marginHorizontal: 24,
+    marginBottom: 16,
   },
 });
 
