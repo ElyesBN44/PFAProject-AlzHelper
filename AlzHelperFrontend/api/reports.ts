@@ -3,14 +3,14 @@ import { getToken } from '../utils/tokenStorage';
 
 const BASE_URL = 'https://0edc3cf12e4c.ngrok-free.app/api';
 
-export async function createReport(symptoms: Array<{ name: string; severity: string }>) {
+export async function createReport({ symptoms, patient }: { symptoms: Array<{ name: string; severity: string }>, patient: string }) {
   try {
     const token = await getToken();
     if (!token) {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.post(`${BASE_URL}/report`, { symptoms }, {
+    const response = await axios.post(`${BASE_URL}/report`, { symptoms, patient }, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
