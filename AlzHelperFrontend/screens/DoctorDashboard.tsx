@@ -1,13 +1,57 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Appbar, Text, Card, Button, Avatar } from 'react-native-paper';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { Appbar, Text, Card, Button } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import { removeToken } from '../utils/tokenStorage';
+import { getAllPatients } from '../api/patients';
+
+const defaultPatientImage = require('../pictures/oldman.jpg');
 
 const DoctorDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const [patients, setPatients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchPatients = useCallback(async () => {
+    try {
+      setError('');
+      setLoading(true);
+      const data = await getAllPatients();
+      setPatients(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load patients');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPatients();
+    }, [fetchPatients])
+  );
+
   const handleLogout = async () => {
     await removeToken();
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
+
+  const renderPatient = ({ item }: any) => (
+    <Card style={styles.card} onPress={() => navigation.navigate('PatientDetailsScreen', { patient: item })}>
+      <Card.Content style={styles.patientRow}>
+        <Image
+          source={item.picture ? { uri: item.picture } : defaultPatientImage}
+          style={styles.patientImage}
+        />
+        <View style={styles.patientInfo}>
+          <Text style={styles.patientName}>{item.name}</Text>
+          <Text style={styles.patientDetails}>Age: {item.age}</Text>
+          <Text style={styles.patientDetails}>Gender: {item.gender}</Text>
+          <Text style={styles.patientDetails}>Contact: {item.contact}</Text>
+        </View>
+      </Card.Content>
+    </Card>
+  );
 
   return (
     <View style={styles.container}>
@@ -17,42 +61,20 @@ const DoctorDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
       </Appbar.Header>
       <ScrollView style={styles.content}>
         <Text style={styles.sectionTitle}>Patient Overview</Text>
-        <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.patientRow}>
-              <Avatar.Text size={50} label="JD" style={styles.avatar} />
-              <View style={styles.patientInfo}>
-                <Text style={styles.patientName}>John Doe</Text>
-                <Text style={styles.patientDetails}>Age: 72 | Stage: Early</Text>
-                <Text style={styles.lastVisit}>Last Visit: 2 days ago</Text>
-              </View>
-            </View>
-          </Card.Content>
-        </Card>
-        <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.patientRow}>
-              <Avatar.Text size={50} label="MS" style={styles.avatar} />
-              <View style={styles.patientInfo}>
-                <Text style={styles.patientName}>Mary Smith</Text>
-                <Text style={styles.patientDetails}>Age: 68 | Stage: Moderate</Text>
-                <Text style={styles.lastVisit}>Last Visit: 1 week ago</Text>
-              </View>
-            </View>
-          </Card.Content>
-        </Card>
-        <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.patientRow}>
-              <Avatar.Text size={50} label="RJ" style={styles.avatar} />
-              <View style={styles.patientInfo}>
-                <Text style={styles.patientName}>Robert Johnson</Text>
-                <Text style={styles.patientDetails}>Age: 75 | Stage: Early</Text>
-                <Text style={styles.lastVisit}>Last Visit: 3 days ago</Text>
-              </View>
-            </View>
-          </Card.Content>
-        </Card>
+        {loading ? (
+          <ActivityIndicator size="large" color="#000" style={{ marginVertical: 32 }} />
+        ) : error ? (
+          <Text style={{ color: 'red', textAlign: 'center', marginBottom: 16 }}>{error}</Text>
+        ) : (
+          <FlatList
+            data={patients}
+            renderItem={renderPatient}
+            keyExtractor={item => item._id}
+            scrollEnabled={false}
+            style={styles.patientList}
+            ListEmptyComponent={<Text style={{ textAlign: 'center', color: '#666' }}>No patients found.</Text>}
+          />
+        )}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionButtons}>
           <Button 
@@ -65,7 +87,7 @@ const DoctorDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
           <Button 
             mode="contained" 
             style={[styles.actionButton, { backgroundColor: '#000' }]}
-            onPress={() => {/* TODO: Navigate to add patient */}}
+            onPress={() => navigation.navigate('AddPatientScreen')}
           >
             Add Patient
           </Button>
@@ -101,35 +123,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 8,
   },
+  patientList: {
+    marginBottom: 16,
+  },
   card: {
     marginBottom: 12,
+    backgroundColor: '#f0f0f0',
     elevation: 2,
   },
   patientRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatar: {
-    backgroundColor: '#000',
-    marginRight: 12,
-  },
-  patientInfo: {
-    flex: 1,
-  },
-  patientName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  patientDetails: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 2,
-  },
-  lastVisit: {
-    fontSize: 12,
-    color: '#999',
-  },
+  patientImage: { width: 60, height: 60, borderRadius: 30, marginRight: 16 },
+  patientInfo: { flex: 1 },
+  patientName: { fontWeight: 'bold', fontSize: 18, marginBottom: 4 },
+  patientDetails: { fontSize: 14, color: '#666', marginBottom: 2 },
   actionButtons: {
     marginTop: 16,
   },
