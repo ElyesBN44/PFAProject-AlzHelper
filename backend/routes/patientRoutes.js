@@ -15,4 +15,7 @@ router.get('/:id', patientController.getPatientById);
 // Get all reports for a specific patient
 router.get('/:id/reports', reportController.getReportsByPatient);
 
+// Delete a patient by ID
+router.delete('/:id', patientController.deletePatient);
+
 module.exports = router; 
