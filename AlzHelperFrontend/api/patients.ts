@@ -9,4 +9,13 @@ export async function getAllPatients() {
   } catch (err: any) {
     throw new Error(err.response?.data?.message || 'Failed to fetch patients');
   }
+}
+
+export async function getPatientReports(patientId: string) {
+  try {
+    const response = await axios.get(`${BASE_URL}/patient/${patientId}/reports`);
+    return response.data.reports;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || 'Failed to fetch patient reports');
+  }
 } 
