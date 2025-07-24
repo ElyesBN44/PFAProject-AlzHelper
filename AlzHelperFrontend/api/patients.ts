@@ -18,4 +18,12 @@ export async function getPatientReports(patientId: string) {
   } catch (err: any) {
     throw new Error(err.response?.data?.message || 'Failed to fetch patient reports');
   }
+}
+
+export async function deletePatient(patientId: string) {
+  try {
+    await axios.delete(`${BASE_URL}/patient/${patientId}`);
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || 'Failed to delete patient');
+  }
 } 
