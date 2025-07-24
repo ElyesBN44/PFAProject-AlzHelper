@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { Appbar, Card, Text, Button } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import { removeToken } from '../utils/tokenStorage';
 import { getAllPatients } from '../api/patients';
 
@@ -11,20 +12,24 @@ const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        setError('');
-        const data = await getAllPatients();
-        setPatients(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load patients');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPatients();
+  const fetchPatients = useCallback(async () => {
+    try {
+      setError('');
+      setLoading(true);
+      const data = await getAllPatients();
+      setPatients(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load patients');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPatients();
+    }, [fetchPatients])
+  );
 
   const handleLogout = async () => {
     await removeToken();
