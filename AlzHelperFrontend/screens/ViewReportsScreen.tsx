@@ -11,6 +11,12 @@ interface Report {
     first_name: string;
     last_name: string;
   };
+  patient?: {
+    name: string;
+    age: number;
+    gender: string;
+    contact: string;
+  };
 }
 
 const ViewReportsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -53,7 +59,13 @@ const ViewReportsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             </Text>
           )}
         </View>
-        
+        {item.patient && (
+          <View style={styles.patientInfoBox}>
+            <Text style={styles.patientInfoTitle}>Patient:</Text>
+            <Text style={styles.patientInfoText}>{item.patient.name} (Age: {item.patient.age}, Gender: {item.patient.gender})</Text>
+            <Text style={styles.patientInfoText}>Contact: {item.patient.contact}</Text>
+          </View>
+        )}
         <Text style={styles.symptomsTitle}>Symptoms:</Text>
         <View style={styles.symptomsList}>
           {item.symptoms.map((symptom, index) => (
@@ -73,7 +85,6 @@ const ViewReportsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             </Chip>
           ))}
         </View>
-        
         <Button 
           mode="outlined" 
           onPress={() => navigation.navigate('AddNoteScreen', { report: item })}
@@ -215,6 +226,21 @@ const styles = StyleSheet.create({
   },
   addNoteButton: {
     marginTop: 12,
+  },
+  patientInfoBox: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+  },
+  patientInfoTitle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginBottom: 2,
+  },
+  patientInfoText: {
+    fontSize: 14,
+    color: '#333',
   },
 });
 
