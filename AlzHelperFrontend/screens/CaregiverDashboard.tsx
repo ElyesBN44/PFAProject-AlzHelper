@@ -75,6 +75,13 @@ const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
           <Button 
             mode="contained" 
             style={[styles.actionButton, { backgroundColor: '#000' }]}
+            onPress={() => navigation.navigate('AddPatientScreen')}
+          >
+            Add Patient
+          </Button>
+          <Button 
+            mode="contained" 
+            style={[styles.actionButton, { backgroundColor: '#000' }]}
             onPress={() => navigation.navigate('AddReportScreen')}
           >
             Add New Symptom
