@@ -7,7 +7,8 @@ exports.getAllReports = async (req, res) => {
   try {
     const reports = await Report.find()
       .populate('caregiverId', 'first_name last_name email')
-      .populate('symptoms');
+      .populate('symptoms')
+      .populate('patient');
     res.json(reports);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch reports', error: error.message });
