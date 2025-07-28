@@ -18,6 +18,10 @@ const reportSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  doctorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Doctor'
   }
 });
 

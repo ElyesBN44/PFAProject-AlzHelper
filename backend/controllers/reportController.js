@@ -18,6 +18,7 @@ exports.createReport = async (req, res) => {
       patient,
       symptoms: createdSymptoms.map(s => s._id)
     });
+    console.log('Creating report:', report);
 
     await report.save();
 
@@ -30,11 +31,17 @@ exports.createReport = async (req, res) => {
 exports.getReportsByPatient = async (req, res) => {
   try {
     const patientId = req.params.id;
+    console.log('Getting reports for patient:', patientId);
+    console.log('User:', req.user);
+    
     const reports = await Report.find({ patient: patientId })
       .populate('symptoms')
       .populate('caregiverId', 'first_name last_name email');
+    
+    console.log('Found reports:', reports.length);
     res.json({ reports });
   } catch (error) {
+    console.error('Error in getReportsByPatient:', error);
     res.status(500).json({ message: 'Failed to fetch reports for patient', error: error.message });
   }
 };

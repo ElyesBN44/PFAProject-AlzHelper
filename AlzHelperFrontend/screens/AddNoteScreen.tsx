@@ -1,178 +1,212 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Appbar, TextInput, Button, Text, Card, Chip } from 'react-native-paper';
+import { Appbar, TextInput, Button, Text, Card } from 'react-native-paper';
 import { addNoteToReport } from '../api/reports';
+import { sharedStyles, colors, typography, spacing, shadows } from '../utils/sharedStyles';
 
-interface Report {
-  _id: string;
-  symptoms: Array<{ name: string; severity: string }>;
-  createdAt: string;
-  caregiver?: {
-    first_name: string;
-    last_name: string;
-  };
-}
-
-interface AddNoteScreenProps {
-  navigation: any;
-  route: {
-    params: {
-      report: Report;
-    };
-  };
-}
-
-const AddNoteScreen: React.FC<AddNoteScreenProps> = ({ navigation, route }) => {
+const AddNoteScreen: React.FC<{ navigation: any; route: any }> = ({ navigation, route }) => {
   const { report } = route.params;
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleSubmit = async () => {
     if (!comment.trim()) {
-      // TODO: Show error message
+      setError('Please enter a comment.');
       return;
     }
 
     setLoading(true);
+    setError('');
+    setSuccess('');
+
     try {
       await addNoteToReport(report._id, comment.trim());
-      // TODO: Show success message
-      navigation.goBack();
-    } catch (error: any) {
-      console.error('Error adding note:', error.message);
-      // TODO: Show error message
+      setSuccess('Note added successfully!');
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Failed to add note');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Appbar.Header style={styles.header}>
+    <View style={sharedStyles.container}>
+      <Appbar.Header style={sharedStyles.header}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title="Add Note" titleStyle={{ color: '#000', fontWeight: 'bold' }} />
+        <Appbar.Content title="Add Note" titleStyle={sharedStyles.headerTitle} />
       </Appbar.Header>
       
-      <ScrollView style={styles.content}>
-        <Text style={styles.sectionTitle}>Report Details</Text>
-        
+      <ScrollView style={sharedStyles.content}>
+        <View style={styles.headerSection}>
+          <Text style={styles.title}>Add Medical Note</Text>
+          <Text style={styles.subtitle}>Add your observations for this report</Text>
+        </View>
+
+        {/* Report Details Card */}
         <Card style={styles.reportCard}>
           <Card.Content>
-            <View style={styles.reportHeader}>
-              <Text style={styles.reportDate}>
+            <Text style={styles.cardTitle}>Report Details</Text>
+            <View style={styles.reportInfo}>
+              <Text style={styles.reportLabel}>Patient:</Text>
+              <Text style={styles.reportValue}>
+                {report.patient?.name || 'Unknown Patient'}
+              </Text>
+            </View>
+            <View style={styles.reportInfo}>
+              <Text style={styles.reportLabel}>Caregiver:</Text>
+              <Text style={styles.reportValue}>
+                {report.caregiverId?.first_name} {report.caregiverId?.last_name}
+              </Text>
+            </View>
+            <View style={styles.reportInfo}>
+              <Text style={styles.reportLabel}>Date:</Text>
+              <Text style={styles.reportValue}>
                 {new Date(report.createdAt).toLocaleDateString()}
               </Text>
-              {report.caregiver && (
-                <Text style={styles.caregiverName}>
-                  By: {report.caregiver.first_name} {report.caregiver.last_name}
-                </Text>
-              )}
             </View>
-            
-            <Text style={styles.symptomsTitle}>Symptoms:</Text>
-            <View style={styles.symptomsList}>
-              {report.symptoms.map((symptom, index) => (
-                <Chip
-                  key={index}
-                  mode="outlined"
-                  style={[
-                    styles.symptomChip,
-                    {
-                      backgroundColor: 
-                        symptom.severity === 'severe' ? '#ffebee' :
-                        symptom.severity === 'moderate' ? '#fff3e0' : '#f3e5f5'
-                    }
-                  ]}
-                >
-                  {symptom.name} ({symptom.severity})
-                </Chip>
+            <View style={styles.symptomsSection}>
+              <Text style={styles.symptomsTitle}>Symptoms:</Text>
+              {report.symptoms?.map((symptom: any, index: number) => (
+                <View key={index} style={styles.symptomItem}>
+                  <Text style={styles.symptomName}>• {symptom.name}</Text>
+                  <Text style={styles.symptomSeverity}>Severity: {symptom.severity}</Text>
+                </View>
               ))}
             </View>
           </Card.Content>
         </Card>
 
-        <Text style={styles.sectionTitle}>Add Your Note</Text>
-        
-        <TextInput
-          label="Doctor's Note"
-          value={comment}
-          onChangeText={setComment}
-          multiline
-          numberOfLines={6}
-          style={styles.noteInput}
-          placeholder="Enter your medical notes, observations, or recommendations..."
-        />
-
-        <Button 
-          mode="contained" 
-          onPress={handleSubmit}
-          loading={loading}
-          disabled={loading || !comment.trim()}
-          style={[styles.submitButton, { backgroundColor: '#000' }]}
-        >
-          Add Note
-        </Button>
+        {/* Note Form */}
+        <Card style={styles.noteCard}>
+          <Card.Content>
+            <Text style={styles.formTitle}>Your Medical Note</Text>
+            <TextInput
+              label="Enter your observations, recommendations, or treatment notes"
+              value={comment}
+              onChangeText={setComment}
+              multiline
+              numberOfLines={6}
+              style={styles.noteInput}
+              mode="outlined"
+              outlineColor={colors.border}
+              activeOutlineColor={colors.primary}
+            />
+            
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {success ? <Text style={styles.successText}>{success}</Text> : null}
+            
+            <Button
+              mode="contained"
+              onPress={handleSubmit}
+              loading={loading}
+              disabled={loading}
+              style={[sharedStyles.button, sharedStyles.buttonPrimary]}
+              labelStyle={styles.buttonLabel}
+            >
+              Add Note
+            </Button>
+          </Card.Content>
+        </Card>
       </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  headerSection: {
+    marginBottom: spacing.lg,
   },
-  header: {
-    backgroundColor: '#fff',
-    elevation: 0,
+  title: {
+    ...typography.h2,
+    marginBottom: spacing.xs,
   },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    marginTop: 8,
+  subtitle: {
+    fontSize: 14,
+    color: colors.text.secondary,
   },
   reportCard: {
-    marginBottom: 24,
-    elevation: 2,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    marginBottom: spacing.lg,
+    ...shadows.sm,
   },
-  reportHeader: {
+  cardTitle: {
+    ...typography.h3,
+    marginBottom: spacing.md,
+  },
+  reportInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.sm,
   },
-  reportDate: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  caregiverName: {
+  reportLabel: {
     fontSize: 14,
-    color: '#666',
+    fontWeight: '600',
+    color: colors.text.secondary,
+  },
+  reportValue: {
+    fontSize: 14,
+    color: colors.text.primary,
+  },
+  symptomsSection: {
+    marginTop: spacing.md,
   },
   symptomsTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    color: colors.text.primary,
   },
-  symptomsList: {
+  symptomItem: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.background,
+    borderRadius: 6,
   },
-  symptomChip: {
-    marginBottom: 8,
+  symptomName: {
+    fontSize: 14,
+    color: colors.text.primary,
+  },
+  symptomSeverity: {
+    fontSize: 12,
+    color: colors.text.secondary,
+  },
+  noteCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    ...shadows.sm,
+  },
+  formTitle: {
+    ...typography.h3,
+    marginBottom: spacing.md,
   },
   noteInput: {
-    marginBottom: 24,
-    backgroundColor: '#f0f0f0',
+    marginBottom: spacing.md,
   },
-  submitButton: {
-    marginTop: 16,
+  buttonLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: colors.accent,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+    fontSize: 14,
+  },
+  successText: {
+    color: colors.success,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+    fontSize: 14,
   },
 });
 

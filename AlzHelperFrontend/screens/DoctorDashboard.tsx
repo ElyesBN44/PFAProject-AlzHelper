@@ -4,6 +4,7 @@ import { Appbar, Text, Card, Button } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 import { removeToken } from '../utils/tokenStorage';
 import { getAllPatients } from '../api/patients';
+import { sharedStyles, colors, typography, spacing, shadows } from '../utils/sharedStyles';
 
 const defaultPatientImage = require('../pictures/oldman.jpg');
 
@@ -37,7 +38,7 @@ const DoctorDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const renderPatient = ({ item }: any) => (
-    <Card style={styles.card} onPress={() => navigation.navigate('PatientDetailsScreen', { patient: item })}>
+    <Card style={styles.patientCard} onPress={() => navigation.navigate('PatientDetailsScreen', { patient: item })}>
       <Card.Content style={styles.patientRow}>
         <Image
           source={item.picture ? { uri: item.picture } : defaultPatientImage}
@@ -54,17 +55,42 @@ const DoctorDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
   );
 
   return (
-    <View style={styles.container}>
-      <Appbar.Header style={styles.header}>
-        <Appbar.Content title="Doctor Dashboard" titleStyle={{ color: '#000' }} />
-        <Appbar.Action icon="logout" color="#000" onPress={handleLogout} />
+    <View style={sharedStyles.container}>
+      <Appbar.Header style={sharedStyles.header}>
+        <Appbar.Content 
+          title="AlzHelper" 
+          subtitle="Doctor Dashboard"
+          titleStyle={sharedStyles.headerTitle}
+          subtitleStyle={styles.headerSubtitle}
+        />
+        <Appbar.Action icon="logout" color={colors.text.primary} onPress={handleLogout} />
       </Appbar.Header>
-      <ScrollView style={styles.content}>
+      
+      <ScrollView style={sharedStyles.content}>
+        <View style={styles.headerSection}>
+          <Text style={styles.welcomeText}>Welcome, Doctor</Text>
+          <Text style={styles.subtitleText}>Manage your patients and their care</Text>
+        </View>
+
+        <View style={styles.statsSection}>
+          <Card style={styles.statsCard}>
+            <Card.Content>
+              <Text style={styles.statsNumber}>{patients.length}</Text>
+              <Text style={styles.statsLabel}>Total Patients</Text>
+            </Card.Content>
+          </Card>
+        </View>
+
         <Text style={styles.sectionTitle}>Patient Overview</Text>
         {loading ? (
-          <ActivityIndicator size="large" color="#000" style={{ marginVertical: 32 }} />
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Loading patients...</Text>
+          </View>
         ) : error ? (
-          <Text style={{ color: 'red', textAlign: 'center', marginBottom: 16 }}>{error}</Text>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
         ) : (
           <FlatList
             data={patients}
@@ -72,31 +98,32 @@ const DoctorDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
             keyExtractor={item => item._id}
             scrollEnabled={false}
             style={styles.patientList}
-            ListEmptyComponent={<Text style={{ textAlign: 'center', color: '#666' }}>No patients found.</Text>}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No patients found.</Text>
+                <Text style={styles.emptySubtext}>Add your first patient to get started</Text>
+              </View>
+            }
           />
         )}
+        
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionButtons}>
           <Button 
             mode="contained" 
-            style={[styles.actionButton, { backgroundColor: '#000' }]}
+            style={[styles.actionButton, { backgroundColor: colors.primary }]}
             onPress={() => navigation.navigate('ViewReportsScreen')}
+            icon="file-document"
           >
             View Reports
           </Button>
           <Button 
             mode="contained" 
-            style={[styles.actionButton, { backgroundColor: '#000' }]}
+            style={[styles.actionButton, { backgroundColor: colors.secondary }]}
             onPress={() => navigation.navigate('AddPatientScreen')}
+            icon="account-plus"
           >
             Add Patient
-          </Button>
-          <Button 
-            mode="contained" 
-            style={[styles.actionButton, { backgroundColor: '#000' }]}
-            onPress={() => {/* TODO: Navigate to analytics */}}
-          >
-            Analytics
           </Button>
         </View>
       </ScrollView>
@@ -105,45 +132,112 @@ const DoctorDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  headerSubtitle: {
+    color: colors.text.secondary,
+    fontSize: 14,
   },
-  header: {
-    backgroundColor: '#fff',
-    elevation: 0,
+  headerSection: {
+    marginBottom: spacing.lg,
   },
-  content: {
-    flex: 1,
-    padding: 16,
+  welcomeText: {
+    ...typography.h2,
+    marginBottom: spacing.xs,
+  },
+  subtitleText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  statsSection: {
+    marginBottom: spacing.lg,
+  },
+  statsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    ...shadows.sm,
+  },
+  statsNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: colors.primary,
+    textAlign: 'center',
+  },
+  statsLabel: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginTop: spacing.xs,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    marginTop: 8,
+    ...typography.h3,
+    marginBottom: spacing.md,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  loadingText: {
+    ...typography.caption,
+    marginTop: spacing.sm,
+    color: colors.text.secondary,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+  },
+  errorText: {
+    color: colors.accent,
+    textAlign: 'center',
+    ...typography.caption,
   },
   patientList: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
-  card: {
-    marginBottom: 12,
-    backgroundColor: '#f0f0f0',
-    elevation: 2,
+  patientCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    marginBottom: spacing.sm,
+    ...shadows.sm,
   },
   patientRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  patientImage: { width: 60, height: 60, borderRadius: 30, marginRight: 16 },
-  patientInfo: { flex: 1 },
-  patientName: { fontWeight: 'bold', fontSize: 18, marginBottom: 4 },
-  patientDetails: { fontSize: 14, color: '#666', marginBottom: 2 },
+  patientImage: { 
+    width: 60, 
+    height: 60, 
+    borderRadius: 30, 
+    marginRight: spacing.md 
+  },
+  patientInfo: { 
+    flex: 1 
+  },
+  patientName: { 
+    ...typography.h3,
+    marginBottom: spacing.xs,
+  },
+  patientDetails: { 
+    ...typography.caption,
+    marginBottom: spacing.xs,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  emptyText: {
+    ...typography.body,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  emptySubtext: {
+    ...typography.caption,
+    color: colors.text.light,
+  },
   actionButtons: {
-    marginTop: 16,
+    marginBottom: spacing.lg,
   },
   actionButton: {
-    marginBottom: 12,
+    marginBottom: spacing.sm,
+    borderRadius: 8,
   },
 });
 

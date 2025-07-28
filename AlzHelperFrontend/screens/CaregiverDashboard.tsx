@@ -1,11 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator } from 'react-native';
-import { Appbar, Card, Text, Button } from 'react-native-paper';
+import { Appbar, Text, Card, Button } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 import { removeToken } from '../utils/tokenStorage';
 import { getAllPatients } from '../api/patients';
+import { sharedStyles, colors, typography, spacing, shadows } from '../utils/sharedStyles';
 
-const defaultPatientImage = require('../pictures/oldman.jpg'); // fallback image
+const defaultPatientImage = require('../pictures/oldman.jpg');
 
 const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [patients, setPatients] = useState<any[]>([]);
@@ -37,34 +38,59 @@ const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const renderPatient = ({ item }: any) => (
-    <Card style={styles.card} onPress={() => navigation.navigate('PatientDetailsScreen', { patient: item })}>
-      <Card.Content style={styles.cardContent}>
+    <Card style={styles.patientCard} onPress={() => navigation.navigate('PatientDetailsScreen', { patient: item })}>
+      <Card.Content style={styles.patientRow}>
         <Image
           source={item.picture ? { uri: item.picture } : defaultPatientImage}
           style={styles.patientImage}
         />
         <View style={styles.patientInfo}>
           <Text style={styles.patientName}>{item.name}</Text>
-          <Text>Age: {item.age}</Text>
-          <Text>Gender: {item.gender}</Text>
-          <Text>Contact: {item.contact}</Text>
+          <Text style={styles.patientDetails}>Age: {item.age}</Text>
+          <Text style={styles.patientDetails}>Gender: {item.gender}</Text>
+          <Text style={styles.patientDetails}>Contact: {item.contact}</Text>
         </View>
       </Card.Content>
     </Card>
   );
 
   return (
-    <View style={styles.container}>
-      <Appbar.Header style={styles.header}>
-        <Appbar.Content title="Caregiver Dashboard" titleStyle={{ color: '#000', fontWeight: 'bold' }} />
-        <Appbar.Action icon="logout" color="#000" onPress={handleLogout} />
+    <View style={sharedStyles.container}>
+      <Appbar.Header style={sharedStyles.header}>
+        <Appbar.Content 
+          title="AlzHelper" 
+          subtitle="Caregiver Dashboard"
+          titleStyle={sharedStyles.headerTitle}
+          subtitleStyle={styles.headerSubtitle}
+        />
+        <Appbar.Action icon="logout" color={colors.text.primary} onPress={handleLogout} />
       </Appbar.Header>
-      <ScrollView style={styles.content}>
+      
+      <ScrollView style={sharedStyles.content}>
+        <View style={styles.headerSection}>
+          <Text style={styles.welcomeText}>Welcome, Caregiver</Text>
+          <Text style={styles.subtitleText}>Monitor your patients and report symptoms</Text>
+        </View>
+
+        <View style={styles.statsSection}>
+          <Card style={styles.statsCard}>
+            <Card.Content>
+              <Text style={styles.statsNumber}>{patients.length}</Text>
+              <Text style={styles.statsLabel}>Assigned Patients</Text>
+            </Card.Content>
+          </Card>
+        </View>
+
         <Text style={styles.sectionTitle}>Patient Overview</Text>
         {loading ? (
-          <ActivityIndicator size="large" color="#000" style={{ marginVertical: 32 }} />
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Loading patients...</Text>
+          </View>
         ) : error ? (
-          <Text style={{ color: 'red', textAlign: 'center', marginBottom: 16 }}>{error}</Text>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
         ) : (
           <FlatList
             data={patients}
@@ -72,31 +98,32 @@ const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
             keyExtractor={item => item._id}
             scrollEnabled={false}
             style={styles.patientList}
-            ListEmptyComponent={<Text style={{ textAlign: 'center', color: '#666' }}>No patients found.</Text>}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No patients assigned.</Text>
+                <Text style={styles.emptySubtext}>Contact your doctor to get assigned patients</Text>
+              </View>
+            }
           />
         )}
+        
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionButtons}>
           <Button 
             mode="contained" 
-            style={[styles.actionButton, { backgroundColor: '#000' }]}
+            style={[styles.actionButton, { backgroundColor: colors.secondary }]}
             onPress={() => navigation.navigate('AddPatientScreen')}
+            icon="account-plus"
           >
             Add Patient
           </Button>
           <Button 
             mode="contained" 
-            style={[styles.actionButton, { backgroundColor: '#000' }]}
+            style={[styles.actionButton, { backgroundColor: colors.primary }]}
             onPress={() => navigation.navigate('AddReportScreen')}
+            icon="plus-circle"
           >
-            Add New Symptom
-          </Button>
-          <Button 
-            mode="contained" 
-            style={[styles.actionButton, { backgroundColor: '#000' }]}
-            onPress={() => {/* TODO: Navigate to view reports */}}
-          >
-            View Reports
+            Add Symptom Report
           </Button>
         </View>
       </ScrollView>
@@ -105,28 +132,113 @@ const CaregiverDashboard: React.FC<{ navigation: any }> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  header: { backgroundColor: '#fff', elevation: 0 },
-  content: { flex: 1, padding: 16 },
-  sectionTitle: {
-    fontSize: 18,
+  headerSubtitle: {
+    color: colors.text.secondary,
+    fontSize: 14,
+  },
+  headerSection: {
+    marginBottom: spacing.lg,
+  },
+  welcomeText: {
+    ...typography.h2,
+    marginBottom: spacing.xs,
+  },
+  subtitleText: {
+    fontSize: 14,
+    color: colors.text.secondary,
+  },
+  statsSection: {
+    marginBottom: spacing.lg,
+  },
+  statsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    ...shadows.sm,
+  },
+  statsNumber: {
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 16,
-    marginTop: 8,
+    color: colors.primary,
+    textAlign: 'center',
+  },
+  statsLabel: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+  },
+  sectionTitle: {
+    ...typography.h3,
+    marginBottom: spacing.md,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  loadingText: {
+    fontSize: 14,
+    marginTop: spacing.sm,
+    color: colors.text.secondary,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+  },
+  errorText: {
+    color: colors.accent,
+    textAlign: 'center',
+    fontSize: 14,
   },
   patientList: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
-  card: { marginBottom: 16, backgroundColor: '#f0f0f0' },
-  cardContent: { flexDirection: 'row', alignItems: 'center' },
-  patientImage: { width: 60, height: 60, borderRadius: 30, marginRight: 16 },
-  patientInfo: { flex: 1 },
-  patientName: { fontWeight: 'bold', fontSize: 18, marginBottom: 4 },
+  patientCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    marginBottom: spacing.sm,
+    ...shadows.sm,
+  },
+  patientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  patientImage: { 
+    width: 60, 
+    height: 60, 
+    borderRadius: 30, 
+    marginRight: spacing.md 
+  },
+  patientInfo: { 
+    flex: 1 
+  },
+  patientName: { 
+    ...typography.h3,
+    marginBottom: spacing.xs,
+  },
+  patientDetails: { 
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  emptySubtext: {
+    fontSize: 12,
+    color: colors.text.light,
+  },
   actionButtons: {
-    marginTop: 16,
+    marginBottom: spacing.lg,
   },
   actionButton: {
-    marginBottom: 12,
+    marginBottom: spacing.sm,
+    borderRadius: 8,
   },
 });
 

@@ -40,6 +40,12 @@ const validateNote = [
   body('comment').notEmpty().withMessage('Comment is required'),
 ];
 
+// Patient note creation validation
+const validatePatientNote = [
+  body('patientId').notEmpty().withMessage('patientId is required'),
+  body('comment').notEmpty().withMessage('Comment is required'),
+];
+
 // Middleware to handle validation errors
 const handleValidation = (req, res, next) => {
   const errors = validationResult(req);
@@ -56,5 +62,6 @@ module.exports = {
   validateDoctorLogin,
   validateReport,
   validateNote,
+  validatePatientNote,
   handleValidation,
 }; 

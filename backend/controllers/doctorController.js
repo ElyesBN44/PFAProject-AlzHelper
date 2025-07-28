@@ -49,3 +49,12 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 };
+
+exports.getAllDoctors = async (req, res) => {
+  try {
+    const doctors = await Doctor.find({}, 'name email _id');
+    res.json(doctors);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

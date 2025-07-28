@@ -4,7 +4,12 @@ const noteSchema = new mongoose.Schema({
   reportId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Report',
-    required: true
+    required: false // Optional for patient notes
+  },
+  patientId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Patient',
+    required: false // Optional for report notes
   },
   doctorId: {
     type: mongoose.Schema.Types.ObjectId,

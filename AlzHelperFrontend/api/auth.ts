@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://0edc3cf12e4c.ngrok-free.app/api';
+const BASE_URL = 'https://46762baa0d86.ngrok-free.app/api';
 
 export async function loginCaregiver(email: string, password: string) {
   try {

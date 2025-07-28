@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getToken } from '../utils/tokenStorage';
 
-const BASE_URL = 'https://0edc3cf12e4c.ngrok-free.app/api';
+const BASE_URL = 'https://46762baa0d86.ngrok-free.app/api';
 
 export async function createReport({ symptoms, patient }: { symptoms: Array<{ name: string; severity: string }>, patient: string }) {
   try {

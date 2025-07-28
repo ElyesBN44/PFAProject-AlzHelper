@@ -13,12 +13,10 @@ const doctorRoutes = require('./routes/doctorRoutes');
 const doctorActionsRoutes = require('./routes/doctorActionsRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 
-
 const app = express(); 
 
 app.use(cors());
 app.use(express.json());
-
 
 app.use('/api', authRoutes); // /api/caregiver/login
 app.use('/api', reportRoutes);

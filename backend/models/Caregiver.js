@@ -6,7 +6,8 @@ const caregiverSchema = new mongoose.Schema({
   last_name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   phone: { type: String },
-  password_hash: { type: String, required: true }
+  password_hash: { type: String, required: true },
+  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' }
 });
 
 
